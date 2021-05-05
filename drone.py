@@ -10,7 +10,7 @@ stream = cv2.VideoCapture(0)
 
 
 def capture(stream):
-
+	# Documentation: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghcircles/py_houghcircles.html
 	while True:
 
 		# Capture frame
