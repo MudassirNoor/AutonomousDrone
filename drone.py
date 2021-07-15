@@ -1,23 +1,24 @@
 # Team Guardian Autonomy Team
-# Spring 2021 Drone
+# Spring 2021 Drone NEW
 # Computer Vision
+# Ref: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghcircles/py_houghcircles.html
 
 import numpy as np
 import cv2
 
 # set the stream input
+# TODO: change to ESP-32 camera stream 
 stream = cv2.VideoCapture(0)
+	
 
 
 def capture(stream):
-	# Documentation: https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghcircles/py_houghcircles.html
-	while True:
 
+	while True:
 		# Capture frame
 		ret, frame = stream.read()
 
-		# circles_img = images to render the circles  
-		# copy the frame and set it to grey scale
+		# circles_img = images to render the circles
 		circles_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
 
@@ -25,33 +26,45 @@ def capture(stream):
 		frame = cv2.medianBlur(frame, 5)
 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-
-		circles = cv2.HoughCircles(frame, cv2.HOUGH_GRADIENT,1, 20, param1=50, param2=30, minRadius=40, maxRadius=50)
+		# TODO: parameters require adjusting to reduce false detection
+		# TODO: switch to blob detection
+		circles = cv2.HoughCircles(frame, cv2.HOUGH_GRADIENT, dp=1, minDist=20, param1=50, param2=30, minRadius=40, maxRadius=50)
 
 		if circles is not None:
 			circles = np.uint16(np.around(circles))
 
 			for i in circles[0, :]:
-				# draw the outer circle
-				cv2.circle(circles_img, (i[0], i[1]), i[2], (0, 255, 0), 2)
-				# draw the center of the circle
-				cv2.circle(circles_img, (i[0], i[1]), 2, (0, 0, 255), 3)
+				coordString = str(i[0]) + ',' + str(i[1]) # circle coordinate
+				print("Detecting circle at: " + coordString)
 
+				# setup the circle parameters
+				circleCoords = (i[0], i[1]) 
+				circleRadius = i[2]
+				circleColor = (0, 255, 0)
+				circleBorder = 2 
+
+				cv2.circle(circles_img, circleCoords, circleRadius, circleColor, circleBorder)
+
+				# setup the text parameters
+				textCoords = (i[0] - 30, i[1])
+				textFont = cv2.FONT_HERSHEY_SIMPLEX
+				textSize = 0.5
+				textColor = (0, 255, 0)
+				textThickness = 1
+		
+				cv2.putText(circles_img, coordString, textCoords, textFont, textSize, textColor, textThickness)
+
+		# display the frame with circles drawn 
 		cv2.imshow('frame', circles_img)
-
-		# display
-		#cv2.imshow('frame', frame)
 
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 			break	
 
-	# free the stream and window
 	stream.release()
 	cv2.destroyAllWindows()
 
 
 def main():
-	# retrieve video steam, 0 for webcam ID
 	capture(stream)
 
 
